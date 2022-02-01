@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="list-items"></div>
+    <table>
+        <tr style="text-align: left;">
+            <th>Item</th>
+            <th>Quantity</th>
+            <th>Added Date</th>
+        </tr>
+        {% for item in list_items %}
+            <tr>
+                <td style="padding-right: 100px;">
+                    {{ item.name }}
+                </td>
+                <td style="padding-right: 100px;">
+                    {{ item.quantity }}
+                </td>
+                <td style="padding-right: 100px;">
+                    {{ item.date_created }}
+                </td>
+                <td>
+                    <a href="{{ url_for('edit_list_item', shopping_list_id=shopping_list.id, edit_list_item_id=item.id) }}">
+                        Edit
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ url_for('delete_list_item', shopping_list_id=shopping_list.id, edit_list_item_id=item.id) }}">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Add an Item</h2>
+    <div>
+        <form method="POST" action="" style="border: 2px;">
+            {{ form.hidden_tag() }}
+            <fieldset>
+                <div>
+                    {{ form.name.label() }}
+                
+                    </br>
+
+                    {% if form.name.errors %}
+                        {{ form.name()}}
+                        <div>
+                            {% for error in form.name.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}                        
+                        {{ form.name() }}
+                    {% endif %}
+                </div>
+                </br>
+                <div>
+                    {{ form.quantity.label() }}
+                
+                    </br>
+
+                    {% if form.quantity.errors %}
+                        {{ form.quantity()}}
+                        <div>
+                            {% for error in form.quantity.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}                        
+                        {{ form.quantity() }}
+                    {% endif %}
+                </div>
+            </fieldset>
+
+            </br>
+            
+            <div>
+                {{ form.submit( class='btn' ) }}
+            </div>
+        </form>
+    </div>
+{% endblock %}

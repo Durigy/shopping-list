@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h2>Edit Item: {{ item.name }}</h2>
+    <div>
+        <form method="POST" action="" style="border: 2px;">
+            {{ form.hidden_tag() }}
+            <fieldset>
+                <div>
+                    {{ form.name.label() }}
+                
+                    </br>
+
+                    {% if form.name.errors %}
+                        {{ form.name()}}
+                        <div>
+                            {% for error in form.name.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}                        
+                        {{ form.name() }}
+                    {% endif %}
+                </div>
+                </br>
+                <div>
+                    {{ form.quantity.label() }}
+                
+                    </br>
+
+                    {% if form.quantity.errors %}
+                        {{ form.quantity()}}
+                        <div>
+                            {% for error in form.quantity.errors %}
+                                <span style="color: red;">{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}                        
+                        {{ form.quantity() }}
+                    {% endif %}
+                </div>
+            </fieldset>
+
+            </br>
+            
+            <div>
+                {{ form.submit( class='btn' ) }}
+            </div>
+        </form>
+    </div>
+{% endblock %}
