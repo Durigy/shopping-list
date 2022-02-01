@@ -85,3 +85,11 @@ you can use the following commands:
 ## Delete item in Shopping List
 ![deleting-item-from-list](https://user-images.githubusercontent.com/56241583/152062571-2207f312-c3c6-4d39-af53-ad64925bc643.JPG)
 
+
+-----------------------------------------------------
+
+# License & copyright
+
+Copyright © 2022 Alexander A Deverson, Durigy
+
+Licensed under the [MIT License](LICENSE.MD)
