@@ -1,8 +1,9 @@
 import secrets
+from tokenize import Triple
 from flask import url_for, redirect
 from main import app, db, bcrypt
 from .models import ShoppingList, User, ShoppingListItem
-from .forms import LoginForm, RegistrationForm, UpdateAccountForm, AddListForm, AddListItemForm
+from .forms import LoginForm, RegistrationForm, UpdateAccountForm, AddListForm, AddListItemForm, UpdateListForm
 from flask_login import login_user, logout_user, login_required, current_user
 from flask import render_template, url_for, request, redirect, flash
 
@@ -66,11 +67,11 @@ def register():
 
     form = RegistrationForm()
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(
-            username=form.username.data,
-            email=form.email.data,
-            password=hashed_password
+            id = secrets.token_hex(10),
+            username = form.username.data,
+            email = form.email.data,
+            password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         )
 
         db.session.add(user)
@@ -114,6 +115,10 @@ def logout():
     logout_user()
     return redirect(request.referrer)
 
+def permission_check_false(shopping_list):
+    if current_user.id == shopping_list.user.id: return False
+    flash('You do not have permission to access that!')
+    return True
 
 #################################
 #                               #
@@ -129,13 +134,14 @@ def all_shopping_lists():
     form = AddListForm()
     if form.validate_on_submit():
         s_list = ShoppingList(
+            id = secrets.token_hex(10),
             name = form.name.data,
             user_id = current_user.id
         )
 
         db.session.add(s_list)
         db.session.commit()
-        flash('Your account was updated')
+        flash(f'{form.name.data} was created')
 
         return redirect(url_for('all_shopping_lists'))
     
@@ -146,18 +152,23 @@ def all_shopping_lists():
         form = form
     )
 
-@app.route("/shopping-list/edit/<string:shopping_list_id>", methods=['GET', 'POST'])
+@app.route("/shopping-list/<string:shopping_list_id>", methods=['GET', 'POST'])
 @login_required
 def shopping_list(shopping_list_id):
     shopping_list = ShoppingList.query.get_or_404(shopping_list_id)
-    if current_user.id != shopping_list.user.id:
-        return url_for('index')
+    
+    if permission_check_false(shopping_list): return redirect(url_for('index'))
 
-    list_items = ShoppingListItem.query.filter_by(shopping_list_id=shopping_list_id).all()
+    list_items = ShoppingListItem.query.filter_by(shopping_list_id=shopping_list_id, in_trolley=False).all()
+    list_items_trolley = ShoppingListItem.query.filter_by(shopping_list_id=shopping_list_id, in_trolley=True).all()
+
 
     form = AddListItemForm()
+    if request.method == 'GET':
+        form.quantity.data = 1
     if form.validate_on_submit():
         s_list_item = ShoppingListItem(
+            id = secrets.token_hex(10),
             name = form.name.data,
             quantity = form.quantity.data,
             shopping_list_id = shopping_list_id
@@ -168,28 +179,39 @@ def shopping_list(shopping_list_id):
         db.session.add(s_list_item)
         db.session.commit()
         if int(form.quantity.data) > 1:
-            flash(f'{form.quantity.data} {form.name.data}s were added')
+            flash(f'{form.quantity.data} {form.name.data}s were added to Shopping List')
         else:
-            flash(f'1 {form.name.data} was added')
+            flash(f'1 {form.name.data} was added to your Shopping List')
 
+        return redirect(url_for('shopping_list', shopping_list_id=shopping_list_id))
+
+    list_form = UpdateListForm()
+    if request.method == 'GET':
+        list_form.list_name.data = shopping_list.name
+
+    if list_form.validate_on_submit():
+        if shopping_list.name != list_form.list_name.data: 
+            shopping_list.name = list_form.list_name.data
+            db.session.commit()
         return redirect(url_for('shopping_list', shopping_list_id=shopping_list_id))
     
     return render_template(
         'shopping_list/list_item.html',
-        form = AddListItemForm(),
+        form = form,
+        list_form = list_form,
         title = f'Shopping List - {shopping_list.name}',
         shopping_list = shopping_list,
-        list_items = list_items
+        list_items = list_items,
+        list_items_trolley = list_items_trolley
     )
 
-@app.route("/shopping-list/edit/<string:shopping_list_id>/<string:edit_list_item_id>", methods=['GET', 'POST'])
+@app.route("/shopping-list/<string:shopping_list_id>/<string:list_item_id>", methods=['GET', 'POST'])
 @login_required
-def edit_list_item(shopping_list_id, edit_list_item_id):
+def edit_list_item(shopping_list_id, list_item_id):
     shopping_list = ShoppingList.query.get_or_404(shopping_list_id)
-    list_item = ShoppingListItem.query.get_or_404(edit_list_item_id)
+    list_item = ShoppingListItem.query.get_or_404(list_item_id)
 
-    if current_user.id != shopping_list.user.id:
-        return url_for('index')
+    if permission_check_false(shopping_list): return redirect(url_for('index'))
 
     form = AddListItemForm()
     if request.method == 'GET':
@@ -208,38 +230,95 @@ def edit_list_item(shopping_list_id, edit_list_item_id):
         'shopping_list/list_item_edit.html',
         form = form,
         title = f'Shopping List - {shopping_list.name}',
-        item = list_item
+        item = list_item,
+        shopping_list=shopping_list
     )
 
-@app.route("/shopping-list/delete/<string:shopping_list_id>/<string:edit_list_item_id>", methods=['GET', 'POST'])
+@app.route("/shopping-list/delete/<string:shopping_list_id>/<string:list_item_id>", methods=['GET', 'POST'])
 @login_required
-def delete_list_item(shopping_list_id, edit_list_item_id):
+def delete_list_item(shopping_list_id, list_item_id):
     shopping_list = ShoppingList.query.get_or_404(shopping_list_id)
-    list_item = ShoppingListItem.query.get_or_404(edit_list_item_id)
+    list_item = ShoppingListItem.query.get_or_404(list_item_id)
 
-    if current_user.id != shopping_list.user.id:
-        return url_for('index')
+    if permission_check_false(shopping_list): return redirect(url_for('index'))
 
     shopping_list.item_count -= 1
 
     db.session.delete(list_item)
     db.session.commit()
 
-    flash('Item was removed')
+    flash('Item was removed from your Shopping List')
 
     return redirect(url_for('shopping_list', shopping_list_id=shopping_list_id))
+    
+    
 
 @app.route("/shopping-list/delete/<string:shopping_list_id>", methods=['GET', 'POST'])
 @login_required
 def delete_list(shopping_list_id):
     shopping_list = ShoppingList.query.get_or_404(shopping_list_id)
+    temp_name = shopping_list.name
 
-    if current_user.id != shopping_list.user.id:
-        return url_for('index')
+    if permission_check_false(shopping_list): return redirect(url_for('index'))
+    
+    list_item = ShoppingListItem.query.filter_by(shopping_list_id=shopping_list_id).all()
+
+    for item in list_item:
+        db.session.delete(item)
 
     db.session.delete(shopping_list)
     db.session.commit()
     
-    flash('List was removed')
+    flash(f'Your \'{temp_name}\' Shopping List was removed along with all it\'s items')
 
     return redirect(url_for('all_shopping_lists'))
+
+
+@app.route("/shopping-list/trolley-add/<string:shopping_list_id>/<string:list_item_id>", methods=['GET', 'POST'])
+@login_required
+def add_item_to_trolley(shopping_list_id, list_item_id):
+    shopping_list = ShoppingList.query.get_or_404(shopping_list_id)
+
+    if permission_check_false(shopping_list): return redirect(url_for('index'))
+    
+    list_item = ShoppingListItem.query.get_or_404(list_item_id)
+
+    list_item.in_trolley = True
+    db.session.commit()
+    
+    flash(f'{list_item.name} added to Trolley')
+
+    return redirect(url_for('shopping_list', shopping_list_id=shopping_list_id))
+
+@app.route("/shopping-list/trolley-remove/<string:shopping_list_id>/<string:list_item_id>", methods=['GET', 'POST'])
+@login_required
+def remove_item_from_trolley(shopping_list_id, list_item_id):
+    shopping_list = ShoppingList.query.get_or_404(shopping_list_id)
+
+    if permission_check_false(shopping_list): return redirect(url_for('index'))
+    
+    list_item = ShoppingListItem.query.get_or_404(list_item_id)
+
+    list_item.in_trolley = False
+    db.session.commit()
+    
+    flash(f'{list_item.name} removed from Trolley')
+
+    return redirect(url_for('shopping_list', shopping_list_id=shopping_list_id))
+
+@app.route("/shopping-list/trolley-remove-all/<string:shopping_list_id>", methods=['GET', 'POST'])
+@login_required
+def remove_all_items_from_trolley(shopping_list_id):
+    shopping_list = ShoppingList.query.get_or_404(shopping_list_id)
+
+    if permission_check_false(shopping_list): return redirect(url_for('index'))
+    
+    list_item = ShoppingListItem.query.filter_by(shopping_list_id=shopping_list_id).all()
+
+    for item in list_item:
+        item.in_trolley = False
+    db.session.commit()
+    
+    flash('All items removed from Trolley')
+
+    return redirect(url_for('shopping_list', shopping_list_id=shopping_list_id))

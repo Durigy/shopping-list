@@ -8,7 +8,7 @@ from flask_login import current_user
 class RegistrationForm(FlaskForm):
     username = StringField('Username *', validators=[DataRequired(), Length(min=2, max=15)])
     email = StringField('Email *', validators=[DataRequired(), Email()])
-    password = PasswordField('Password *', validators=[DataRequired()]) #, Regexp('^(?=.*\d).{6,8}$', message='Your password should be between 6 and 8 Charaters long and contain at least 1 number')])
+    password = PasswordField('Password *', validators=[DataRequired()]) #, Regexp('^(?=.*\d).{6,20}$', message='Your password should be between 6 and 20 Charaters long and contain at least 1 number')])
     confirm_password = PasswordField('Confirm Password *', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Register')
 
@@ -25,7 +25,7 @@ class RegistrationForm(FlaskForm):
 
 class LoginForm(FlaskForm):
     username = StringField('Username')
-    password = PasswordField('Password', validators=[DataRequired(), ]) # Regexp('^(?=.*\d).{6,8}$', message='Your password should be between 6 and 8 Charaters long and contain at least 1 number')
+    password = PasswordField('Password', validators=[DataRequired()]) #, Regexp('^(?=.*\d).{6,20}$', message='Your password should be between 6 and 20 Charaters long and contain at least 1 number')])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
@@ -47,10 +47,14 @@ class UpdateAccountForm(FlaskForm):
                 raise ValidationError('Email already Used. Please Use a different one.')
 
 class AddListForm(FlaskForm):
-    name = StringField('Shopping List Name')
+    name = StringField('Shopping List Name *', validators=[DataRequired()])
     submit = SubmitField('Create List')
 
+class UpdateListForm(FlaskForm):
+    list_name = StringField('Shopping List Name *', validators=[DataRequired()])
+    submit = SubmitField('Updata List')
+
 class AddListItemForm(FlaskForm):
-    name = StringField('Item Name')
-    quantity = IntegerField('Quantity')
-    submit = SubmitField('Add Item')
+    name = StringField('Item Name *', validators=[DataRequired()])
+    quantity = IntegerField('Quantity', validators=[NumberRange(min=1)])
+    submit = SubmitField('Update Item')

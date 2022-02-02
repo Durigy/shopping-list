@@ -41,7 +41,7 @@ def load_user(user_id):
 class ShoppingList(db.Model):
     # Datebase Columns 
     id = db.Column(db.String(20), primary_key=True, default=secrets.token_hex(10)) # Must be randomly generated
-    name = db.Column(db.String(128), unique=True, nullable=False)
+    name = db.Column(db.String(128), unique=False, nullable=False)
     item_count = db.Column(db.Integer, nullable=False, default=0)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
@@ -54,9 +54,11 @@ class ShoppingList(db.Model):
 class ShoppingListItem(db.Model):
     # Datebase Columns 
     id = db.Column(db.String(20), primary_key=True, default=secrets.token_hex(10)) # Must be randomly generated
-    name = db.Column(db.String(128), unique=True, nullable=False)
+    name = db.Column(db.String(128), unique=False, nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    in_trolley = db.Column(db.Boolean, nullable=False, default=False)
+    # priority = db.Column(db.Integer, nullable=False, default=1)
 
     # Links (ForeignKeys)
     shopping_list_id = db.Column(db.String(20), db.ForeignKey('shopping_list.id'), nullable=False)
