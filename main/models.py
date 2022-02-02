@@ -54,11 +54,11 @@ class ShoppingList(db.Model):
 class ShoppingListItem(db.Model):
     # Datebase Columns 
     id = db.Column(db.String(20), primary_key=True, default=secrets.token_hex(10)) # Must be randomly generated
-    name = db.Column(db.String(128), unique=False, nullable=False)
+    name = db.Column(db.String(128), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     in_trolley = db.Column(db.Boolean, nullable=False, default=False)
-    # priority = db.Column(db.Integer, nullable=False, default=1)
+    priority = db.Column(db.Integer, nullable=False, default=1)
 
     # Links (ForeignKeys)
     shopping_list_id = db.Column(db.String(20), db.ForeignKey('shopping_list.id'), nullable=False)

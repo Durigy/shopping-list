@@ -56,5 +56,12 @@ class UpdateListForm(FlaskForm):
 
 class AddListItemForm(FlaskForm):
     name = StringField('Item Name *', validators=[DataRequired()])
-    quantity = IntegerField('Quantity', validators=[NumberRange(min=1)])
+    quantity = IntegerField('Quantity *', validators=[DataRequired(), NumberRange(min=1)])
+    priority = IntegerField('Priority *', validators=[DataRequired(), NumberRange(min=1)])
+    submit = SubmitField('Add Item')
+
+class UpdateListItemForm(FlaskForm):
+    name = StringField('Item Name *', validators=[DataRequired()])
+    quantity = IntegerField('Quantity *', validators=[DataRequired(), NumberRange(min=1)])
+    priority = IntegerField('Priority *', validators=[DataRequired(), NumberRange(min=1)])
     submit = SubmitField('Update Item')

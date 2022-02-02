@@ -159,18 +159,20 @@ def shopping_list(shopping_list_id):
     
     if permission_check_false(shopping_list): return redirect(url_for('index'))
 
-    list_items = ShoppingListItem.query.filter_by(shopping_list_id=shopping_list_id, in_trolley=False).all()
+    list_items = ShoppingListItem.query.filter_by(shopping_list_id=shopping_list_id, in_trolley=False).order_by(ShoppingListItem.priority).all()
     list_items_trolley = ShoppingListItem.query.filter_by(shopping_list_id=shopping_list_id, in_trolley=True).all()
 
 
     form = AddListItemForm()
     if request.method == 'GET':
         form.quantity.data = 1
+        form.priority.data = 1
     if form.validate_on_submit():
         s_list_item = ShoppingListItem(
             id = secrets.token_hex(10),
             name = form.name.data,
             quantity = form.quantity.data,
+            priority = form.priority.data,
             shopping_list_id = shopping_list_id
         )
 
@@ -217,10 +219,12 @@ def edit_list_item(shopping_list_id, list_item_id):
     if request.method == 'GET':
         form.name.data = list_item.name
         form.quantity.data = list_item.quantity
+        form.priority.data = list_item.priority
 
     if form.validate_on_submit():
         list_item.name = form.name.data
         list_item.quantity = form.quantity.data
+        list_item.priority = form.priority.data
 
         db.session.commit()
         flash('Item was updated')

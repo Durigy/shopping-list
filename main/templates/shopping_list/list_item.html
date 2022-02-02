@@ -80,6 +80,23 @@
                         {{ form.quantity() }}
                     {% endif %}
                 </div>
+            </br>
+            <div>
+                {{ form.priority.label() }}
+            
+                </br>
+
+                {% if form.priority.errors %}
+                    {{ form.priority()}}
+                    <div>
+                        {% for error in form.priority.errors %}
+                            <span style="color: red;">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}                        
+                    {{ form.priority() }}
+                {% endif %}
+            </div>
             </fieldset>
 
             </br>
@@ -120,7 +137,7 @@
                     </td>
                     <td style="padding-left: 50px;">
                         <a href="{{ url_for('add_item_to_trolley', shopping_list_id=shopping_list.id, list_item_id=item.id) }}">
-                            In Trolley
+                            Add to Trolley
                         </a>
                     </td>
                 </tr>
@@ -136,7 +153,7 @@
         <h2>Items in Trolley</h2>
         <div>
             <a href="{{ url_for('remove_all_items_from_trolley', shopping_list_id=shopping_list.id) }}" style="color: red;">
-                Remove</a> all items from Trolley
+                Remove all</a> items from Trolley
         </div>
 
         </br>
