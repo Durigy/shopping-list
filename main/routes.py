@@ -204,7 +204,8 @@ def shopping_list(shopping_list_id):
         title = f'Shopping List - {shopping_list.name}',
         shopping_list = shopping_list,
         list_items = list_items,
-        list_items_trolley = list_items_trolley
+        list_items_trolley = list_items_trolley,
+        back_button = url_for('all_shopping_lists')
     )
 
 @app.route("/shopping-list/<string:shopping_list_id>/<string:list_item_id>", methods=['GET', 'POST'])
@@ -235,7 +236,8 @@ def edit_list_item(shopping_list_id, list_item_id):
         form = form,
         title = f'Shopping List - {shopping_list.name}',
         item = list_item,
-        shopping_list=shopping_list
+        shopping_list=shopping_list,
+        back_button = url_for('shopping_list', shopping_list_id=shopping_list_id)
     )
 
 @app.route("/shopping-list/delete/<string:shopping_list_id>/<string:list_item_id>", methods=['GET', 'POST'])

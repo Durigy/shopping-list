@@ -43,6 +43,13 @@
             </div>
             <div id="content">
                 <br>
+                <div>
+                    {% if back_button  != null %}
+                        <a href="{{ back_button }}">
+                            Go Back
+                        </a>
+                    {% endif %}
+                </div>
                 {% block content %}
 
                 {% endblock %}
