@@ -24,10 +24,11 @@ class RegistrationForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Username')
+    username_email = StringField('Username or Email')
     password = PasswordField('Password', validators=[DataRequired()]) #, Regexp('^(?=.*\d).{6,20}$', message='Your password should be between 6 and 20 Charaters long and contain at least 1 number')])
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
+        
 
 class UpdateAccountForm(FlaskForm):
     username = StringField('Username *', validators=[DataRequired(), Length(min=2, max=15)])
